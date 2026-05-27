@@ -13,12 +13,12 @@ import {
 
 import { ScrollAnimation } from "@/components/ScrollAnimation";
 
-import typescriptPdf from "@/assets/files/certificates_pdf/TypeScript.pdf";
-import awsEcsPdf from "@/assets/files/certificates_pdf/aws_ecs.pdf";
-import javascriptPdf from "@/assets/files/certificates_pdf/javascript.pdf";
-import dockerPdf from "@/assets/files/certificates_pdf/docker_fundamentals.pdf";
-import pythonPdf from "@/assets/files/certificates_pdf/python.pdf";
-import cybersecurityPdf from "@/assets/files/certificates_pdf/cybersecurity_virtual_program.pdf";
+// import typescriptPdf from "@/assets/files/certificates_pdf/TypeScript.pdf";
+// import awsEcsPdf from "@/assets/files/certificates_pdf/aws_ecs.pdf";
+// import javascriptPdf from "@/assets/files/certificates_pdf/javascript.pdf";
+// import dockerPdf from "@/assets/files/certificates_pdf/docker_fundamentals.pdf";
+// import pythonPdf from "@/assets/files/certificates_pdf/python.pdf";
+// import cybersecurityPdf from "@/assets/files/certificates_pdf/cybersecurity_virtual_program.pdf";
 
 const certificates = [
   {
@@ -30,7 +30,7 @@ const certificates = [
 
     icon: <Cloud className="w-6 h-6" />,
 
-    link: awsEcsPdf,
+    // link: awsEcsPdf,
 
     description:
       "Focused on deploying and managing scalable containerized applications using AWS ECS, load balancing, auto-scaling, cluster orchestration, and CI/CD deployment workflows.",
@@ -53,7 +53,7 @@ const certificates = [
 
     icon: <Container className="w-6 h-6" />,
 
-    link: dockerPdf,
+    // link: dockerPdf,
 
     description:
       "Learned containerization concepts, Docker networking, image management, security practices, and deployment workflows for scalable backend applications.",
@@ -75,7 +75,7 @@ const certificates = [
 
     icon: <Code2 className="w-6 h-6" />,
 
-    link: typescriptPdf,
+    // link: typescriptPdf,
 
     description:
       "Covered TypeScript fundamentals including static typing, interfaces, asynchronous programming, scalable application structure, and backend/frontend integration concepts.",
@@ -97,7 +97,7 @@ const certificates = [
 
     icon: <Server className="w-6 h-6" />,
 
-    link: javascriptPdf,
+    // link: javascriptPdf,
 
     description:
       "Validated core JavaScript concepts including ES6 features, asynchronous programming, functional concepts, and problem-solving techniques.",
@@ -119,7 +119,7 @@ const certificates = [
 
     icon: <Code2 className="w-6 h-6" />,
 
-    link: pythonPdf,
+    // link: pythonPdf,
 
     description:
       "Validated Python fundamentals including functions, loops, data structures, scripting logic, and problem-solving basics.",
@@ -141,7 +141,7 @@ const certificates = [
 
     icon: <ShieldCheck className="w-6 h-6" />,
 
-    link: cybersecurityPdf,
+    // link: cybersecurityPdf,
 
     description:
       "Focused on cybersecurity concepts including threat analysis, ransomware handling, vulnerability identification, and risk mitigation workflows.",
