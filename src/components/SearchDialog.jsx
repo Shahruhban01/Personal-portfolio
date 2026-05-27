@@ -1,0 +1,411 @@
+import { useState, useEffect } from "react";
+
+import { useNavigate } from "react-router-dom";
+
+import {
+  Search,
+  Command,
+  ArrowRight,
+  Server,
+  Database,
+  Briefcase,
+  GraduationCap,
+  Award,
+  FolderKanban,
+  User,
+  Mail,
+} from "lucide-react";
+
+const searchData = [
+  {
+    title: "Home",
+
+    description:
+      "Backend Engineer portfolio homepage",
+
+    path: "/",
+
+    icon: <Server className="w-4 h-4" />,
+
+    keywords: [
+      "home",
+      "portfolio",
+      "ruhban",
+      "ruhban abdullah",
+      "backend engineer",
+      "nodejs",
+      "backend developer",
+      "scalable systems",
+      "api developer",
+      "mongodb",
+      "mysql",
+      "aws",
+      "express",
+      "real-time systems",
+    ],
+  },
+
+  {
+    title: "About",
+
+    description:
+      "Learn more about my background and engineering journey",
+
+    path: "/about",
+
+    icon: <User className="w-4 h-4" />,
+
+    keywords: [
+      "about",
+      "background",
+      "bio",
+      "profile",
+      "backend engineering",
+      "software engineer",
+      "backend developer",
+      "ruhban",
+    ],
+  },
+
+  {
+    title: "Education",
+
+    description:
+      "View academic background and qualifications",
+
+    path: "/education",
+
+    icon: <GraduationCap className="w-4 h-4" />,
+
+    keywords: [
+      "education",
+      "bca",
+      "college",
+      "degree",
+      "higher secondary",
+      "school",
+      "government boys higher secondary school bomai",
+      "govt degree college baramulla",
+    ],
+  },
+
+  {
+    title: "Experience",
+
+    description:
+      "Professional backend engineering experience",
+
+    path: "/experience",
+
+    icon: <Briefcase className="w-4 h-4" />,
+
+    keywords: [
+      "experience",
+      "backend engineer",
+      "foodhung",
+      "world social integration",
+      "internship",
+      "career",
+      "nodejs",
+      "php",
+      "aws",
+      "backend systems",
+    ],
+  },
+
+  {
+    title: "Skills",
+
+    description:
+      "Technical stack, backend technologies, and tools",
+
+    path: "/skills",
+
+    icon: <Database className="w-4 h-4" />,
+
+    keywords: [
+      "skills",
+      "nodejs",
+      "expressjs",
+      "mongodb",
+      "mysql",
+      "aws",
+      "flutter",
+      "firebase",
+      "docker",
+      "backend",
+      "rest api",
+      "websockets",
+      "system design",
+      "devops",
+    ],
+  },
+
+  {
+    title: "Projects",
+
+    description:
+      "Scalable backend systems and real-world projects",
+
+    path: "/projects",
+
+    icon: <FolderKanban className="w-4 h-4" />,
+
+    keywords: [
+      "projects",
+      "wows",
+      "picloud",
+      "queue system",
+      "real-time systems",
+      "backend architecture",
+      "aws",
+      "flutter",
+      "cloud storage",
+      "websocket",
+      "system design",
+      "github",
+    ],
+  },
+
+  {
+    title: "Certificates",
+
+    description:
+      "Technical certifications and achievements",
+
+    path: "/certificates",
+
+    icon: <Award className="w-4 h-4" />,
+
+    keywords: [
+      "certificates",
+      "aws",
+      "docker",
+      "javascript",
+      "typescript",
+      "python",
+      "cybersecurity",
+      "devops",
+    ],
+  },
+
+  {
+    title: "Contact",
+
+    description:
+      "Get in touch for backend engineering opportunities",
+
+    path: "/contact",
+
+    icon: <Mail className="w-4 h-4" />,
+
+    keywords: [
+      "contact",
+      "hire",
+      "freelance",
+      "backend engineer",
+      "email",
+      "whatsapp",
+      "linkedin",
+      "github",
+      "job opportunity",
+    ],
+  },
+];
+
+const SearchDialog = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [results, setResults] = useState(searchData);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+
+        setIsOpen((prev) => !prev);
+      }
+
+      if (!isOpen) return;
+
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+
+        setSelectedIndex(
+          (prev) => (prev + 1) % results.length,
+        );
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+
+        setSelectedIndex(
+          (prev) =>
+            (prev - 1 + results.length) % results.length,
+        );
+      }
+
+      if (e.key === "Enter" && results.length > 0) {
+        e.preventDefault();
+
+        navigate(results[selectedIndex].path);
+
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () =>
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+  }, [isOpen, results, selectedIndex, navigate]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = searchData.filter((item) => {
+        const searchLower =
+          searchQuery.toLowerCase();
+
+        return (
+          item.title
+            .toLowerCase()
+            .includes(searchLower) ||
+          item.description
+            .toLowerCase()
+            .includes(searchLower) ||
+          item.keywords.some((keyword) =>
+            keyword
+              .toLowerCase()
+              .includes(searchLower),
+          )
+        );
+      });
+
+      setResults(filtered);
+
+      setSelectedIndex(0);
+    } else {
+      setResults(searchData);
+    }
+  }, [searchQuery]);
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center space-x-2 px-3 py-1.5 text-gray-400 hover:text-white transition-colors bg-white/15 rounded-lg hover:bg-white/10"
+      >
+        <Search className="w-4 h-4" />
+
+        <span className="text-sm hidden sm:block">
+          Search...
+        </span>
+
+        <span className="hidden md:flex items-center space-x-1 px-1.5 py-0.5 text-xs bg-white/10 rounded">
+          <Command className="w-3 h-3" />
+
+          <span>K</span>
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="min-h-screen px-4 text-center">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsOpen(false)}
+        />
+
+        <div className="inline-block w-full max-w-2xl mt-24 text-left align-middle transition-all transform">
+          <div className="relative bg-gray-900 rounded-xl shadow-2xl border border-white/10 overflow-hidden">
+            <div className="flex items-center px-4 border-b border-white/10">
+              <Search className="w-5 h-5 text-gray-400" />
+
+              <input
+                type="text"
+                placeholder="Search pages..."
+                className="w-full px-4 py-4 text-white bg-transparent border-0 focus:outline-none focus:ring-0"
+                value={searchQuery}
+                onChange={(e) =>
+                  setSearchQuery(e.target.value)
+                }
+                autoFocus
+              />
+
+              <div className="flex items-center space-x-1 px-1.5 py-0.5 text-xs text-gray-400 bg-white/10 rounded">
+                <span>Esc</span>
+              </div>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto">
+              {results.length === 0 ? (
+                <div className="p-6 text-sm text-gray-400">
+                  No results found.
+                </div>
+              ) : (
+                <div className="py-2">
+                  {results.map((result, index) => (
+                    <button
+                      key={result.path}
+                      className={`w-full px-4 py-4 text-left hover:bg-white/5 flex items-center justify-between transition-colors ${
+                        index === selectedIndex
+                          ? "bg-white/10"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        navigate(result.path);
+
+                        setIsOpen(false);
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 text-gray-400">
+                          {result.icon}
+                        </div>
+
+                        <div>
+                          <div className="text-white font-medium">
+                            {result.title}
+                          </div>
+
+                          <div className="text-sm text-gray-400">
+                            {result.description}
+                          </div>
+                        </div>
+                      </div>
+
+                      <ArrowRight
+                        className={`w-4 h-4 text-gray-400 transition-opacity ${
+                          index === selectedIndex
+                            ? "opacity-100"
+                            : "opacity-0"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SearchDialog;
