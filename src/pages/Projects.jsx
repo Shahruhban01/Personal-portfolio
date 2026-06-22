@@ -7,6 +7,33 @@ import project4 from "@/assets/projects_img/project-4.png";
 
 const projects = [
   {
+  title: "VaultX | Personal Digital Vault Platform",
+
+  description:
+    "Enterprise-grade personal digital vault designed for secure storage and instant access to identity documents, cards, notes, certificates, medical records, and sensitive files. Built with a unified Flutter mobile application, React web platform, Node.js backend, MongoDB Atlas, and Cloudflare R2 private storage architecture featuring biometric authentication, encrypted document management, advanced search, secure sharing, offline access, and large-file chunk uploads.",
+
+  image: vaultxImage, // import your generated icon/screenshot
+
+  github: "",
+
+  live: "",
+
+  tags: [
+    "Flutter",
+    "React.js",
+    "Node.js",
+    "MongoDB Atlas",
+    "Cloudflare R2",
+    "JWT",
+    "Chunk Upload",
+    "Biometric Auth",
+    "REST APIs",
+    "Bootstrap 5",
+    "Secure Storage",
+    "System Design",
+  ],
+},
+  {
     title: "WOW'S | Real-Time Live Streaming Platform",
 
     description:
