@@ -4,6 +4,7 @@ import project1 from "@/assets/projects_img/project-1.png";
 import project2 from "@/assets/projects_img/project-2.png";
 import project3 from "@/assets/projects_img/project-3.png";
 import project4 from "@/assets/projects_img/project-4.png";
+import vaultxImage from "@/assets/projects_img/vault-image.png";
 
 const projects = [
   {
@@ -14,9 +15,9 @@ const projects = [
 
   image: vaultxImage, // import your generated icon/screenshot
 
-  github: "",
+  github: "https://github.com/Shahruhban01/PersonalDocVault",
 
-  live: "",
+  live: "https://vault.developerruhban.online/",
 
   tags: [
     "Flutter",
