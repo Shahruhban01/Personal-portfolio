@@ -16,8 +16,11 @@ import useSWR from "swr";
 import cvPdf from "@/assets/files/cv_pdf/RuhbanResumeF.pdf";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
+const localcv = false;
 
 const Home = () => {
+  const cvlink = "https://drive.google.com/file/d/1G7nWg2vVoF8bwFJ-woYvTk1OGQL6r1G4/view?usp=sharing";
+
   const [copied, setCopied] = useState(false);
 
   const email = "shahruhban01@gmail.com";
@@ -103,7 +106,7 @@ const Home = () => {
         >
           <div className="flex justify-center space-x-3 sm:space-x-4">
             <a
-              href={cvPdf}
+              href={localcv ? cvPdf : cvlink}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-black rounded-full text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center gap-2"
