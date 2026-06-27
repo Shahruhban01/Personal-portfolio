@@ -16,7 +16,7 @@ import useSWR from "swr";
 import cvPdf from "@/assets/files/cv_pdf/RuhbanResumeF.pdf";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
-const localcv = true;
+const localcv = false;
 
 const Home = () => {
   const cvlink = "https://drive.google.com/file/d/1G7nWg2vVoF8bwFJ-woYvTk1OGQL6r1G4/view?usp=sharing";
