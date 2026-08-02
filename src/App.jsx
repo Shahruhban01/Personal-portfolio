@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -207,6 +208,7 @@ function App() {
 
         <Footer />
       </div>
+      <Analytics />
     </BrowserRouter>
   );
 }
