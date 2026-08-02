@@ -306,6 +306,8 @@ const SearchDialog = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Search portfolio"
+        title="Search portfolio"
         className="flex items-center space-x-2 px-3 py-1.5 text-gray-400 hover:text-white transition-colors bg-white/15 rounded-lg hover:bg-white/10"
       >
         <Search className="w-4 h-4" />

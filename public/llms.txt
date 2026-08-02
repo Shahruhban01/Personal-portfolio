@@ -1,0 +1,24 @@
+# Ruhban Abdullah — Personal Portfolio & Backend Engineer
+
+> Official portfolio website of Ruhban Abdullah, a Backend Engineer specializing in Node.js, Express.js, MongoDB, MySQL, AWS, microservices, and distributed real-time systems.
+
+## Core Pages
+
+- [Homepage](https://developerruhban.online/): Overview of Ruhban Abdullah, backend engineering focus, GitHub stats, and featured projects.
+- [About](https://developerruhban.online/about): Background, experience summary, technical philosophy, and backend expertise.
+- [Projects](https://developerruhban.online/projects): Portfolio of backend engineering projects, APIs, and microservices.
+- [Skills](https://developerruhban.online/skills): Detailed inventory of programming languages, frameworks, databases, cloud platforms, and DevOps tools.
+- [Experience](https://developerruhban.online/experience): Professional work experience, software engineering roles, and achievements.
+- [Education](https://developerruhban.online/education): Educational background, degree, and coursework.
+- [Certifications](https://developerruhban.online/certificates): Verified certifications, credentials, and honors.
+- [Contact](https://developerruhban.online/contact): Direct contact details, office hours, and social profiles.
+
+## External Profiles
+
+- [GitHub Profile](https://github.com/shahruhban01): Source code repositories, open-source contributions, and technical projects.
+- [LinkedIn Profile](https://linkedin.com/in/shahruhban): Professional profile, career history, and recommendations.
+
+## Supplementary Links
+
+- [Sitemap](https://developerruhban.online/sitemap.xml): Full XML sitemap listing all indexed routes.
+- [Full Context](https://developerruhban.online/llms-full.txt): Detailed full-text portfolio overview for LLM agents.

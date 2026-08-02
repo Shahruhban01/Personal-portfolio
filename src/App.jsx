@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
-import Background3D from "./components/Background3D";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
 
+const Background3D = lazy(() => import("./components/Background3D"));
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
 const Education = lazy(() => import("./pages/Education"));
@@ -180,7 +180,9 @@ function App() {
       <SEOUpdater />
 
       <div className="min-h-screen flex flex-col">
-        <Background3D />
+        <Suspense fallback={null}>
+          <Background3D />
+        </Suspense>
 
         <Navbar />
 

@@ -33,6 +33,8 @@ Allow: /sitemap.xml
 Allow: /manifest.json
 Allow: /og-image.png
 Allow: /favicon.ico
+Allow: /llms.txt
+Allow: /llms-full.txt
 Allow: /*.pdf$
 
 # Sitemap

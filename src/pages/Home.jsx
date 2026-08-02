@@ -30,6 +30,7 @@ const Home = () => {
     "https://api.github.com/users/shahruhban01",
     fetcher,
     {
+      fallbackData: { public_repos: 15 },
       revalidateOnFocus: false,
       dedupingInterval: 60000,
       shouldRetryOnError: true,

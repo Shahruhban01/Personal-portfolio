@@ -1,0 +1,32 @@
+# Ruhban Abdullah — Full Portfolio & Technical Background
+
+> Detailed full-text context of Ruhban Abdullah's portfolio for Large Language Models and AI search systems.
+
+## Summary
+
+Ruhban Abdullah is a Backend Engineer based in Sopore, Jammu and Kashmir, India. He specializes in architecting and implementing scalable backend systems, robust RESTful & WebSocket APIs, microservices, and real-time distributed architectures.
+
+## Core Technical Skills
+
+- **Backend Engineering:** Node.js, Express.js, WebSockets, REST APIs, Microservices Architecture.
+- **Databases:** MongoDB, MySQL, Redis.
+- **Cloud & DevOps:** AWS, Vercel, Render, CI/CD, Git, Postman.
+- **Frontend & UI:** React 18, Vite 5, Tailwind CSS, Framer Motion, SWR.
+
+## Main Portfolio Links
+
+- [Homepage](https://developerruhban.online/): High-level overview, real-time GitHub activity, and key highlights.
+- [About Me](https://developerruhban.online/about): Background, experience, achievements, and engineering focus.
+- [Projects](https://developerruhban.online/projects): Detailed breakdown of backend and full-stack projects.
+- [Skills](https://developerruhban.online/skills): Complete technical stack listing.
+- [Experience](https://developerruhban.online/experience): Career experience and technical roles.
+- [Education](https://developerruhban.online/education): Degree and academic record (BCA).
+- [Certifications](https://developerruhban.online/certificates): Professional certifications and tech credentials.
+- [Contact](https://developerruhban.online/contact): Email, phone, location, and social links.
+
+## Contact Information
+
+- **Email:** shahruhban01@gmail.com
+- **Location:** Sopore, Jammu and Kashmir, India
+- **GitHub:** https://github.com/shahruhban01
+- **LinkedIn:** https://linkedin.com/in/shahruhban
