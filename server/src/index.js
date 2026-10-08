@@ -32,7 +32,7 @@ const port = Number(process.env.PORT || 4000);
 const maxFileSize = Number(process.env.MAX_FILE_SIZE_BYTES || 10 * 1024 * 1024);
 const allowedOrigins = (
   process.env.CLIENT_ORIGIN ||
-  "http://localhost:5173,http://localhost:5174"
+  "https://developerruhban.online"
 )
   .split(",")
   .map((origin) => origin.trim())
