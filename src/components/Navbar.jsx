@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Code2, Menu, X } from 'lucide-react'
+import { Code2, Menu, Upload, X } from 'lucide-react'
 import SearchDialog from './SearchDialog'
 
 const Navbar = () => {
@@ -17,6 +17,7 @@ const Navbar = () => {
     { path: '/projects', label: 'Projects' },
     { path: '/certificates', label: 'Certificates' },
     { path: '/contact', label: 'Contact' },
+    { path: '/upload', label: 'Upload', icon: Upload },
   ]
 
   return (
@@ -47,6 +48,7 @@ const Navbar = () => {
                   className={`nav-link ${location.pathname === link.path ? 'bg-white/15 backdrop-blur-sm' : ''}`}
                   aria-current={location.pathname === link.path ? 'page' : undefined}
                 >
+                  {link.icon && <link.icon className="mr-1.5 inline-block h-4 w-4" aria-hidden="true" />}
                   {link.label}
                 </Link>
               ))}
@@ -92,6 +94,7 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                   aria-current={location.pathname === link.path ? 'page' : undefined}
                 >
+                  {link.icon && <link.icon className="mr-1.5 inline-block h-4 w-4" aria-hidden="true" />}
                   {link.label}
                 </Link>
               ))}

@@ -16,6 +16,8 @@ const Skills = lazy(() => import("./pages/Skills"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Certificates = lazy(() => import("./pages/Certificates"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Upload = lazy(() => import("./pages/Upload"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 /* Per-page SEO metadata */
@@ -81,6 +83,17 @@ const pageMeta = {
 
     description:
       "Get in touch with Ruhban Abdullah for backend engineering roles, freelance backend projects, scalable API development, or cloud infrastructure work.",
+  },
+
+  "/upload": {
+    title: "Upload | Ruhban Abdullah",
+    description:
+      "Upload text and files to Ruhban Abdullah's secure content storage API.",
+  },
+
+  "/admin": {
+    title: "Admin | Ruhban Abdullah",
+    description: "Private upload administration.",
   },
 };
 
@@ -204,6 +217,8 @@ function App() {
                 element={<Certificates />}
               />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/upload" element={<Upload />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

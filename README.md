@@ -131,6 +131,47 @@ npm run build
 npm run preview
 ```
 
+## 📤 Upload API
+
+The `/upload` page sends text and an optional file together to the standalone
+Express API in [`server/`](./server). Text is stored in MongoDB and files are
+uploaded to Cloudflare R2.
+
+```bash
+# Frontend (from the repository root)
+npm install
+npm run dev
+
+# API (in a second terminal)
+cd server
+npm install
+copy .env.example .env
+# Fill in MongoDB and Cloudflare R2 values in server/.env
+# Set a long random value for ADMIN_TOKEN
+npm run dev
+```
+
+Set `VITE_API_URL` in the frontend environment when the API is not running at
+`http://localhost:4000`. The API exposes `POST /api/uploads` as a multipart
+form endpoint with `text` and `file` fields, plus `GET /health`.
+`CLIENT_ORIGIN` accepts a comma-separated list, which is useful when Vite
+switches between ports such as `5173` and `5174`.
+
+Required R2 values are `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
+`R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`. `R2_PUBLIC_BASE_URL` is optional
+and is used only to return a public URL for uploaded files.
+
+Open `/admin` in the frontend and enter the value of `ADMIN_TOKEN` to view
+stored uploads. The admin list endpoint is protected with a bearer token, and
+private R2 files are returned as signed URLs that expire after 15 minutes.
+Each upload also has a delete action. Deleting an upload removes its MongoDB
+record and its corresponding R2 object.
+
+If MongoDB reports `querySrv ECONNREFUSED`, the machine running the API cannot
+currently resolve MongoDB Atlas's SRV DNS record. Check VPN/firewall/DNS
+settings, allow your IP in Atlas Network Access, or copy Atlas's non-SRV
+connection string from **Connect → Drivers** and use that as `MONGODB_URI`.
+
 ---
 
 ## 🎯 Portfolio Sections
