@@ -13,6 +13,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Upload from "./models/Upload.js";
+import Contact from "./models/Contact.js";
 
 const requiredEnv = [
   "MONGODB_URI",
@@ -53,7 +54,11 @@ const upload = multer({
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
         return callback(null, true);
       }
 
@@ -129,6 +134,72 @@ app.delete("/api/admin/uploads/:id", requireAdmin, async (request, response, nex
 
     await uploadRecord.deleteOne();
     return response.json({ message: "Upload deleted." });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get("/api/admin/contacts", requireAdmin, async (request, response, next) => {
+  try {
+    const limit = Math.min(Math.max(Number(request.query.limit) || 50, 1), 100);
+    const contacts = await Contact.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    return response.json({ contacts });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.delete("/api/admin/contacts/:id", requireAdmin, async (request, response, next) => {
+  try {
+    const contactRecord = await Contact.findById(request.params.id);
+    if (!contactRecord) {
+      return response.status(404).json({ message: "Contact message not found." });
+    }
+
+    await contactRecord.deleteOne();
+    return response.json({ message: "Contact message deleted." });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.post("/api/contact", async (request, response, next) => {
+  try {
+    const { name, email, subject, message } = request.body || {};
+
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return response.status(400).json({ message: "Name is required." });
+    }
+    if (!email || typeof email !== "string" || !email.trim()) {
+      return response.status(400).json({ message: "Email is required." });
+    }
+    if (!message || typeof message !== "string" || !message.trim()) {
+      return response.status(400).json({ message: "Message is required." });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return response.status(400).json({ message: "Please provide a valid email address." });
+    }
+
+    const contact = await Contact.create({
+      name: name.trim().slice(0, 100),
+      email: email.trim().toLowerCase().slice(0, 200),
+      subject: subject && typeof subject === "string" && subject.trim()
+        ? subject.trim().slice(0, 200)
+        : "Portfolio Inquiry",
+      message: message.trim().slice(0, 5000),
+    });
+
+    return response.status(201).json({
+      message: "Message received successfully.",
+      id: contact.id,
+      createdAt: contact.createdAt,
+    });
   } catch (error) {
     return next(error);
   }
