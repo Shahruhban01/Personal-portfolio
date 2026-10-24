@@ -27,6 +27,17 @@ const contactSchema = new mongoose.Schema(
       trim: true,
       maxlength: 5000,
     },
+    read: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "replied", "archived"],
+      default: "pending",
+      index: true,
+    },
   },
   { timestamps: true }
 );
