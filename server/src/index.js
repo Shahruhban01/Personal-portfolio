@@ -1,6 +1,8 @@
 import "dotenv/config";
 import crypto from "node:crypto";
 import path from "node:path";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -17,6 +19,8 @@ import Upload from "./models/Upload.js";
 import Contact from "./models/Contact.js";
 import Visitor from "./models/Visitor.js";
 import Visit from "./models/Visit.js";
+import musicRoutes, { createStreamHandler, createCoverHandler } from "./routes/music.js";
+import { createAdminMusicRouter } from "./routes/adminMusic.js";
 import {
   getClientIp,
   anonymizeIp,
@@ -91,9 +95,10 @@ app.get("/health", (_request, response) => {
 
 const requireAdmin = (request, response, next) => {
   const authorization = request.get("authorization") || "";
+  const xAdminToken = request.get("x-admin-token") || "";
   const token = authorization.startsWith("Bearer ")
     ? authorization.slice("Bearer ".length).trim()
-    : "";
+    : (xAdminToken || authorization);
 
   if (!token || token !== process.env.ADMIN_TOKEN) {
     return response.status(401).json({ message: "Admin authentication required." });
@@ -727,12 +732,35 @@ app.post("/api/uploads", upload.single("file"), async (request, response, next) 
   }
 });
 
+// ============================================================================
+// 5. MUSIC STREAMING & MUSIC MANAGEMENT
+// ============================================================================
+
+app.get("/api/music/stream/:id", createStreamHandler(s3));
+app.get("/api/music/cover/:id", createCoverHandler(s3));
+app.use("/api/music", musicRoutes);
+app.use("/api/admin/music", requireAdmin, createAdminMusicRouter(s3));
+
+// Static files for portfolio and dedicated /music and /admin/music routes
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const simplePortfolioDir = path.resolve(__dirname, "../../../simple-portfolio");
+if (fs.existsSync(simplePortfolioDir)) {
+  app.get(/^\/music\/?$/, (_req, res) => {
+    res.sendFile(path.join(simplePortfolioDir, "music", "index.html"));
+  });
+  app.get(/^\/admin\/music\/?$/, (_req, res) => {
+    res.sendFile(path.join(simplePortfolioDir, "admin", "music", "index.html"));
+  });
+  app.use(express.static(simplePortfolioDir));
+}
+
 app.use((error, _request, response, _next) => {
   if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
     return response.status(413).json({ message: "File exceeds the configured size limit." });
   }
   console.error(error);
-  return response.status(500).json({ message: "The upload could not be completed." });
+  return response.status(500).json({ message: error.message || "The request could not be completed." });
 });
 
 const connectToMongoDb = async () => {
