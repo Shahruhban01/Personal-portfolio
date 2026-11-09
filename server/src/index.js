@@ -98,9 +98,10 @@ app.get("/health", (_request, response) => {
 const requireAdmin = (request, response, next) => {
   const authorization = request.get("authorization") || "";
   const xAdminToken = request.get("x-admin-token") || "";
+  const queryToken = request.query?.token || "";
   const token = authorization.startsWith("Bearer ")
     ? authorization.slice("Bearer ".length).trim()
-    : (xAdminToken || authorization);
+    : (xAdminToken || queryToken || authorization);
 
   if (!token || token !== process.env.ADMIN_TOKEN) {
     return response.status(401).json({ message: "Admin authentication required." });

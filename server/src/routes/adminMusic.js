@@ -45,6 +45,46 @@ export const createAdminMusicRouter = (s3) => {
   }
 
   /**
+   * Helper: Map Cloudflare R2 / AWS S3 errors to explicit HTTP status codes & descriptive messages
+   */
+  function mapR2Error(error, operationName = "Storage operation") {
+    const name = error.name || error.Code || "";
+    const msg = error.message || "";
+
+    if (name === "NoSuchUpload" || msg.includes("NoSuchUpload")) {
+      return { status: 404, message: "Multipart upload ID not found or has already expired/been aborted." };
+    }
+    if (name === "NoSuchBucket" || msg.includes("NoSuchBucket")) {
+      return { status: 404, message: "Configured Cloudflare R2 bucket does not exist." };
+    }
+    if (name === "NoSuchKey" || msg.includes("NoSuchKey")) {
+      return { status: 404, message: "Audio or cover asset not found in storage." };
+    }
+    if (name === "InvalidPart" || msg.includes("InvalidPart")) {
+      return { status: 400, message: "Uploaded part is invalid, corrupted, or ETag mismatch." };
+    }
+    if (name === "InvalidPartOrder" || msg.includes("InvalidPartOrder")) {
+      return { status: 400, message: "Uploaded parts must be in continuous ascending order (1, 2, 3...)." };
+    }
+    if (name === "EntityTooSmall" || msg.includes("EntityTooSmall")) {
+      return { status: 400, message: "Each chunk part (except the last) must be at least 5 MB." };
+    }
+    if (name === "AccessDenied" || msg.includes("AccessDenied")) {
+      return { status: 403, message: "Cloudflare R2 authorization failure. Check R2 credentials and bucket permissions." };
+    }
+    if (name === "RequestTimeout" || msg.includes("RequestTimeout")) {
+      return { status: 408, message: "Storage request timed out. Please retry." };
+    }
+
+    const code = error.$metadata?.httpStatusCode || error.statusCode;
+    const finalStatus = code >= 400 && code < 600 ? code : 500;
+    return {
+      status: finalStatus,
+      message: `${operationName} failed: ${msg || name || "Internal error"}`,
+    };
+  }
+
+  /**
    * GET /api/admin/music/overview
    * Dashboard metrics
    */
@@ -199,11 +239,13 @@ export const createAdminMusicRouter = (s3) => {
           }),
           { expiresIn: 1800 }
         );
+        const adminTokenQuery = process.env.ADMIN_TOKEN ? `&token=${encodeURIComponent(process.env.ADMIN_TOKEN)}` : "";
 
         return response.json({
           uploadType: "single",
           storageKey: coverKey,
           presignedUrl,
+          proxyUrl: `/api/admin/music/upload/cover?storageKey=${encodeURIComponent(coverKey)}${adminTokenQuery}`,
         });
       }
 
@@ -239,6 +281,7 @@ export const createAdminMusicRouter = (s3) => {
       const uploadId = multipart.UploadId;
       const numParts = Math.max(1, Math.ceil(sizeNum / PART_SIZE));
       const parts = [];
+      const adminTokenQuery = process.env.ADMIN_TOKEN ? `&token=${encodeURIComponent(process.env.ADMIN_TOKEN)}` : "";
 
       // Generate presigned URL for each chunk
       for (let partNumber = 1; partNumber <= numParts; partNumber++) {
@@ -256,7 +299,7 @@ export const createAdminMusicRouter = (s3) => {
         parts.push({
           partNumber,
           presignedUrl,
-          proxyUrl: `/api/admin/music/upload/part?uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}&storageKey=${encodeURIComponent(storageKey)}`,
+          proxyUrl: `/api/admin/music/upload/part?uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}&storageKey=${encodeURIComponent(storageKey)}${adminTokenQuery}`,
         });
       }
 
@@ -269,28 +312,78 @@ export const createAdminMusicRouter = (s3) => {
         parts,
       });
     } catch (error) {
-      return next(error);
+      const { status, message } = mapR2Error(error, "Multipart upload initialization");
+      return response.status(status).json({ message });
+    }
+  });
+
+  /**
+   * PUT /api/admin/music/upload/cover
+   * High-speed streaming proxy for cover artwork directly to Cloudflare R2
+   */
+  router.put("/upload/cover", async (request, response) => {
+    try {
+      const { storageKey } = request.query;
+      if (!storageKey) {
+        return response.status(400).json({ message: "Storage key (storageKey) is required." });
+      }
+
+      const chunks = [];
+      for await (const chunk of request) {
+        chunks.push(chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+      if (buffer.length === 0) {
+        return response.status(400).json({ message: "Cover image payload cannot be empty." });
+      }
+
+      const mimeType = request.headers["content-type"] || "image/jpeg";
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: storageKey,
+          Body: buffer,
+          ContentType: mimeType,
+        })
+      );
+
+      return response.json({ message: "Cover uploaded successfully.", storageKey });
+    } catch (error) {
+      const { status, message } = mapR2Error(error, "Cover upload");
+      return response.status(status).json({ message });
     }
   });
 
   /**
    * PUT /api/admin/music/upload/part
-   * Streams a file part directly to Cloudflare R2 UploadPartCommand (no disk saving, no full-file memory)
+   * High-speed streaming proxy directly to Cloudflare R2 UploadPartCommand (buffered chunk in RAM, zero disk write)
    */
-  router.put("/upload/part", async (request, response, next) => {
+  router.put("/upload/part", async (request, response) => {
     try {
       const { uploadId, partNumber, storageKey } = request.query;
 
-      if (!uploadId || !partNumber || !storageKey) {
-        return response.status(400).json({ message: "uploadId, partNumber, and storageKey are required." });
+      if (!uploadId) {
+        return response.status(400).json({ message: "Upload ID (uploadId) is required." });
       }
-
-      const contentLength = Number(request.headers["content-length"]);
-      if (!contentLength) {
-        return response.status(400).json({ message: "Content-Length header is required." });
+      if (!storageKey) {
+        return response.status(400).json({ message: "Storage key (storageKey) is required." });
       }
 
       const partNum = parseInt(partNumber, 10);
+      if (Number.isNaN(partNum) || partNum < 1 || partNum > 10000) {
+        return response.status(400).json({ message: "Valid integer partNumber (between 1 and 10000) is required." });
+      }
+
+      // Collect chunk payload into Buffer (typically ~5MB, well within Node.js memory safety)
+      const chunks = [];
+      for await (const chunk of request) {
+        chunks.push(chunk);
+      }
+      const buffer = Buffer.concat(chunks);
+      if (buffer.length === 0) {
+        return response.status(400).json({ message: "Chunk body cannot be empty." });
+      }
 
       const uploadPartRes = await s3.send(
         new UploadPartCommand({
@@ -298,8 +391,8 @@ export const createAdminMusicRouter = (s3) => {
           Key: storageKey,
           UploadId: uploadId,
           PartNumber: partNum,
-          Body: request,
-          ContentLength: contentLength,
+          Body: buffer,
+          ContentLength: buffer.length,
         })
       );
 
@@ -309,7 +402,8 @@ export const createAdminMusicRouter = (s3) => {
         ETag: uploadPartRes.ETag,
       });
     } catch (error) {
-      return next(error);
+      const { status, message } = mapR2Error(error, `Chunk upload (part ${request.query?.partNumber})`);
+      return response.status(status).json({ message });
     }
   });
 
@@ -317,7 +411,7 @@ export const createAdminMusicRouter = (s3) => {
    * POST /api/admin/music/upload/complete
    * Finalizes multipart upload in R2, verifies file size, extracts metadata, saves to MongoDB
    */
-  router.post("/upload/complete", async (request, response, next) => {
+  router.post("/upload/complete", async (request, response) => {
     try {
       const {
         uploadId,
@@ -464,7 +558,8 @@ export const createAdminMusicRouter = (s3) => {
         song,
       });
     } catch (error) {
-      return next(error);
+      const { status, message } = mapR2Error(error, "Multipart upload completion");
+      return response.status(status).json({ message });
     }
   });
 
@@ -472,7 +567,7 @@ export const createAdminMusicRouter = (s3) => {
    * POST /api/admin/music/upload/abort
    * Aborts an incomplete multipart upload in R2 and cleans up partial chunks
    */
-  router.post("/upload/abort", async (request, response, next) => {
+  router.post("/upload/abort", async (request, response) => {
     try {
       const { uploadId, storageKey } = request.body || {};
       if (uploadId && storageKey) {
@@ -486,7 +581,8 @@ export const createAdminMusicRouter = (s3) => {
       }
       return response.json({ message: "Upload aborted and storage cleaned up." });
     } catch (error) {
-      return next(error);
+      const { status, message } = mapR2Error(error, "Multipart upload abort");
+      return response.status(status).json({ message });
     }
   });
 
