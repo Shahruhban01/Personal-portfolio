@@ -73,7 +73,9 @@ app.use(
         !origin ||
         origin === "null" ||
         allowedOrigins.includes(origin) ||
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        /^https:\/\/([a-zA-Z0-9-]+\.)?developerruhban\.online$/.test(origin) ||
+        /^https:\/\/([a-zA-Z0-9-]+\.)?vercel\.app$/.test(origin)
       ) {
         return callback(null, true);
       }
