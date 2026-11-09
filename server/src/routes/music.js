@@ -1,5 +1,5 @@
 import express from "express";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import Song from "../models/Song.js";
 import Playlist from "../models/Playlist.js";
 
@@ -222,26 +222,70 @@ export const createStreamHandler = (s3) => {
         }
       }
 
-      const totalSize = Number(song.fileSize || 0);
+      let totalSize = Number(song.fileSize || 0);
+      if (!totalSize) {
+        try {
+          const head = await s3.send(
+            new HeadObjectCommand({
+              Bucket: process.env.R2_BUCKET_NAME,
+              Key: song.storageKey,
+            })
+          );
+          totalSize = head.ContentLength || 0;
+          if (totalSize > 0) {
+            Song.findByIdAndUpdate(song._id, { fileSize: totalSize }).catch(() => {});
+          }
+        } catch (_headErr) {}
+      }
+
       const mimeType = getAudioMimeType(song.format);
       const range = request.headers.range;
 
       if (range && totalSize > 0) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+        const match = range.match(/^bytes=(\d*)-(\d*)$/);
+        if (!match) {
+          response.status(416);
+          response.set({ "Content-Range": `bytes */${totalSize}` });
+          return response.end();
+        }
 
-        // 416 Range Not Satisfiable
+        let start;
+        let end;
+
+        if (match[1] === "" && match[2] !== "") {
+          // Suffix range: bytes=-500 (last 500 bytes)
+          const suffix = parseInt(match[2], 10);
+          if (suffix <= 0) {
+            response.status(416);
+            response.set({ "Content-Range": `bytes */${totalSize}` });
+            return response.end();
+          }
+          start = Math.max(0, totalSize - suffix);
+          end = totalSize - 1;
+        } else if (match[1] !== "") {
+          start = parseInt(match[1], 10);
+          end = match[2] !== "" ? parseInt(match[2], 10) : totalSize - 1;
+          // Clamp end to totalSize - 1 if requested range extends beyond file boundary (RFC 7233)
+          if (end >= totalSize) {
+            end = totalSize - 1;
+          }
+        } else {
+          // Invalid range format: bytes=-
+          response.status(416);
+          response.set({ "Content-Range": `bytes */${totalSize}` });
+          return response.end();
+        }
+
+        // Validate range bounds
         if (
           Number.isNaN(start) ||
+          Number.isNaN(end) ||
           start >= totalSize ||
-          (end !== undefined && end >= totalSize) ||
-          start > end
+          start > end ||
+          start < 0
         ) {
           response.status(416);
-          response.set({
-            "Content-Range": `bytes */${totalSize}`,
-          });
+          response.set({ "Content-Range": `bytes */${totalSize}` });
           return response.end();
         }
 
